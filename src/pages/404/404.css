@@ -1,0 +1,19 @@
+.page--not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+}
+.not-found-title {
+  margin: 12px 50%;
+  text-align: center;
+  font-size: 48px;
+  background-color: #c34844;
+  color: white;
+  -webkit-transform: skew(-15deg);
+    transform: skew(-15deg);
+  border-radius: 5%;
+  border-width: 5px;
+  padding: 12px 12px 12px
+}

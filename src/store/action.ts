@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { OfferData, ReviewData, SelectedOfferData, State } from '../types';
+import { OfferData, ReviewData, SelectedOfferData, State, loginResData } from '../types';
 import { api } from '.';
 import { AxiosError } from 'axios';
-import { setOffers, setError, setReviews, setActiveOffer, setNearbyOffers, setAuthStatus, setUserData, setFavorites } from './reducer';
+import { setOffers, setError, setReviews, setActiveOffer, setNearbyOffers, setAuthStatus, setUserData, setFavorites, updateOffer, setCity } from './reducer';
 
 const extractError = (err: AxiosError) => {
   if (typeof err?.message === 'string') {
@@ -14,20 +14,22 @@ const extractError = (err: AxiosError) => {
 export const loadOffers = createAsyncThunk(
   'SET_OFFERS',
   async (_, thunk) => {
+    const savedToken = window.localStorage.getItem('six-cities-token');
     try {
       const state: State = thunk.getState() as State;
       const user: State['userData'] = state.userData;
-      const response = await api.get('/offers', {headers: {'X-Token': user?.token}});
+      const response = await api.get('/offers', {headers: {'X-Token': user ? user.token : savedToken}});
       const offers: OfferData[] = response.data as OfferData[];
 
       thunk.dispatch(setOffers(offers));
+      thunk.dispatch(setCity(offers[0].city));
       thunk.dispatch(setError(null));
 
     } catch (err: unknown) {
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
 
-      thunk.dispatch(setError(errorMessage));
+      thunk.dispatch(setError(`SET_OFFERS: ${errorMessage}`));
     }
   }
 );
@@ -46,7 +48,7 @@ export const loadReviews = createAsyncThunk(
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
 
-      thunk.dispatch(setError(errorMessage));
+      thunk.dispatch(setError(`SET_REVIEWS: ${errorMessage}`));
     }
   }
 );
@@ -54,10 +56,11 @@ export const loadReviews = createAsyncThunk(
 export const loadActiveOffer = createAsyncThunk(
   'SET_ACTIVE_OFFER',
   async (id: string, thunk) => {
+    const savedToken = window.localStorage.getItem('six-cities-token');
+    const state: State = thunk.getState() as State;
     try {
-      const state: State = thunk.getState() as State;
       const user: State['userData'] = state.userData;
-      const response = await api.get(`/offers/${id}`, {headers: {'X-Token': user?.token}});
+      const response = await api.get(`/offers/${id}`, {headers: {'X-Token': user ? user.token : savedToken}});
       const offer: SelectedOfferData = response.data as SelectedOfferData;
 
       thunk.dispatch(setActiveOffer(offer));
@@ -66,8 +69,8 @@ export const loadActiveOffer = createAsyncThunk(
     } catch (err: unknown) {
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
-
-      thunk.dispatch(setError(errorMessage));
+      thunk.dispatch(setError(`SET_ACTIVE_OFFER: ${errorMessage}`));
+      state.isFailed.activeOffer = true;
     }
   }
 );
@@ -75,16 +78,41 @@ export const loadActiveOffer = createAsyncThunk(
 export const loadNearbyOffers = createAsyncThunk(
   'SET_NEARBY_OFFERS',
   async (id: string, thunk) => {
+    const state: State = thunk.getState() as State;
+    const savedToken = window.localStorage.getItem('six-cities-token');
     try {
-      const state: State = thunk.getState() as State;
       const user: State['userData'] = state.userData;
-      const response = await api.get(`/offers/${id}/nearby`, {headers: {'X-Token': user?.token}});
+      const response = await api.get(`/offers/${id}/nearby`, {headers: {'X-Token': user ? user.token : savedToken}});
       const offers: OfferData[] = response.data as OfferData[];
       thunk.dispatch(setNearbyOffers(offers));
     } catch (err: unknown) {
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
-      thunk.dispatch(setError(errorMessage));
+      thunk.dispatch(setError(`SET_NEARBY_OFFERS: ${errorMessage}`));
+      state.isFailed.nearbyOffers = true;
+    }
+  }
+);
+
+
+export const tryAuth = createAsyncThunk(
+  'TRY_AUTH',
+  async (data: { email: string; password: string }, thunk) => {
+    const state: State = thunk.getState() as State;
+    try {
+      const response = await api.post('/login', data);
+      thunk.dispatch(setAuthStatus('AUTH'));
+      const resData = response.data as loginResData;
+      thunk.dispatch(setUserData(resData as State['userData']));
+      window.localStorage.setItem('six-cities-token', resData.token);
+      thunk.dispatch(setError(null));
+      thunk.dispatch(loadOffers());
+
+    } catch (err: unknown) {
+      const errResponse: AxiosError = err as AxiosError;
+      const errorMessage = extractError(errResponse);
+      thunk.dispatch(setError(`TRY_AUTH: ${errorMessage}`));
+      state.isFailed.login = true;
     }
   }
 );
@@ -92,11 +120,15 @@ export const loadNearbyOffers = createAsyncThunk(
 export const loadAuthStatus = createAsyncThunk(
   'SET_AUTH_STATUS',
   async (_, thunk) => {
+    const savedToken = window.localStorage.getItem('six-cities-token');
     try {
-      const response = await api.get('/login');
-
+      const response = await api.get('/login', { headers: { 'X-Token': savedToken } });
+      const data = response.data as loginResData;
       if (response.status === 200) {
         thunk.dispatch(setAuthStatus('AUTH'));
+        window.localStorage.setItem('six-cities-token', data.token);
+        thunk.dispatch(setUserData(data));
+
         return;
       }
 
@@ -110,39 +142,41 @@ export const loadAuthStatus = createAsyncThunk(
   }
 );
 
-export const tryAuth = createAsyncThunk(
-  'TRY_AUTH',
-  async (data: {email: string; password: string}, thunk) => {
+export const logout = createAsyncThunk(
+  'LOGOUT',
+  async (_, thunk) => {
+    const state: State = thunk.getState() as State;
+    const offers = state.offers;
     try {
-      const response = await api.post('/login', data);
-
-      thunk.dispatch(setAuthStatus('AUTH'));
-      thunk.dispatch(setUserData(response.data as State['userData']));
-      thunk.dispatch(setError(null));
-      thunk.dispatch(loadOffers());
-
-    } catch (err: unknown) {
-      const errResponse: AxiosError = err as AxiosError;
-      const errorMessage = extractError(errResponse);
-
-      thunk.dispatch(setError(errorMessage));
+      await api.delete('/logout', { headers: { 'X-Token': state.userData?.token } });
+      window.localStorage.removeItem('six-cities-token');
+      thunk.dispatch(setAuthStatus('NO_AUTH'));
+      thunk.dispatch(setUserData(null));
+      thunk.dispatch(setFavorites([]));
+      offers?.map((offer) => thunk.dispatch(updateOffer({ id: offer.id, offer: { ...offer, isFavorite: false } })));
+    } catch (err) {
+      thunk.dispatch(setAuthStatus('NO_AUTH'));
+      thunk.dispatch(setUserData(null));
     }
   }
 );
 
-
 export const postComment = createAsyncThunk(
   'POST_COMMENT',
   async (data: { comment: string; rating: number; id: string }, thunk) => {
+    const state: State = thunk.getState() as State;
     try {
-      const state: State = thunk.getState() as State;
       const user: State['userData'] = state.userData;
-      await api.post(`/comments/${data.id}`, { comment: data.comment, rating: data.rating }, { headers: { 'X-Token': user?.token } });
+      const response = await api.post(`/comments/${data.id}`, { comment: data.comment, rating: data.rating }, { headers: { 'X-Token': user?.token } });
       thunk.dispatch(setError(null));
+      thunk.dispatch(setReviews([...state.reviews, response.data as ReviewData]));
+      return true;
     } catch (err: unknown) {
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
       thunk.dispatch(setError(errorMessage));
+      state.isFailed.review = true;
+      return false;
     }
   }
 );
@@ -150,8 +184,8 @@ export const postComment = createAsyncThunk(
 export const loadFavorites = createAsyncThunk(
   'SET_FAVORITES',
   async (_, thunk) => {
+    const state: State = thunk.getState() as State;
     try {
-      const state: State = thunk.getState() as State;
       const user: State['userData'] = state.userData;
       const response = await api.get('/favorite', { headers: { 'X-Token': user?.token } });
       const offers: OfferData[] = response.data as OfferData[];
@@ -159,25 +193,36 @@ export const loadFavorites = createAsyncThunk(
     } catch (err: unknown) {
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
-      thunk.dispatch(setError(errorMessage));
+      thunk.dispatch(setError(`SET_FAVORITES: ${errorMessage}`));
+      state.isFailed.favorites = true;
     }
   }
 );
 
+
 export const toggleFavorite = createAsyncThunk(
   'TOGGLE_FAVORITE',
   async (data: { id: string; status: boolean}, thunk) => {
+    const state: State = thunk.getState() as State;
+    const currentOffer = state.offers?.find((offer) => offer.id === data.id);
+    if (!currentOffer) {
+      return;
+    }
+    const user: State['userData'] = state.userData;
     try {
-      const state: State = thunk.getState() as State;
-      const user: State['userData'] = state.userData;
-      const setStatus = Number(!data.status);
-      await api.post(`/favorite/${data.id}/${setStatus}`, {},{ headers: { 'X-Token': user?.token } });
+      const newStatus = Number(!data.status);
+      thunk.dispatch(updateOffer({ id: data.id, offer: {...currentOffer, isFavorite: !currentOffer?.isFavorite} }));
+      const response = await api.post(`/favorite/${data.id}/${newStatus}`, {},{ headers: { 'X-Token': user?.token } });
       thunk.dispatch(setError(null));
-      thunk.dispatch(loadFavorites());
-      thunk.dispatch(loadOffers());
+      if (newStatus === 0) {
+        thunk.dispatch(setFavorites([...state.favoriteOffers].toSpliced(state.favoriteOffers.findIndex((offer) => offer.id === data.id), 1)));
+      } else {
+        thunk.dispatch(setFavorites([...state.favoriteOffers, response.data as OfferData]));
+      }
       thunk.dispatch(loadActiveOffer(data.id));
       thunk.dispatch(loadNearbyOffers(data.id));
     } catch (err: unknown) {
+      thunk.dispatch(updateOffer({ id: data.id, offer: {...currentOffer, isFavorite: !currentOffer?.isFavorite} }));
       const errResponse: AxiosError = err as AxiosError;
       const errorMessage = extractError(errResponse);
       thunk.dispatch(setError(errorMessage));

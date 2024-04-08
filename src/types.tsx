@@ -1,14 +1,5 @@
-import { AUTH_STATUS_VALUES, CITIES } from './const';
-
-export type City = {
-  name: string;
-  location: {
-    latitude: number;
-    longitude: number;
-    zoom: number;
-  };
-};
-
+import { AnyAction, ThunkDispatch } from '@reduxjs/toolkit';
+import { AUTH_STATUS_VALUES } from './const';
 export type Point = {
   id: string;
   latitude: number;
@@ -17,18 +8,21 @@ export type Point = {
 
 export type Points = Point[];
 
+export type CityData = {
+  name: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    zoom: number;
+  };
+}
+
 export type OfferData = {
   id: string;
   title: string;
   type: string;
   price: number;
-  city: {
-  name: string;
-  location: {
-  latitude: number;
-  longitude: number;
-  zoom: number;
-  };};
+  city: CityData;
   location: {
   latitude: number;
   longitude: number;
@@ -45,13 +39,7 @@ export type SelectedOfferData = {
   title: string;
   type: string;
   price: number;
-  city: {
-  name: string;
-  location: {
-  latitude: number;
-  longitude: number;
-  zoom: number;
-  };};
+  city: CityData;
   location: {
   latitude: number;
   longitude: number;
@@ -72,16 +60,14 @@ export type SelectedOfferData = {
   maxAdults: number;
 };
 
-export type CityName = typeof CITIES[number];
 export type AuthStatus = typeof AUTH_STATUS_VALUES[number];
 
 export type State = {
-  city: CityName;
-  offers: OfferData[];
+  city: CityData;
+  offers: OfferData[] | null;
   reviews: ReviewData[];
   activeOffer: SelectedOfferData;
   nearbyOffers: OfferData[] | null;
-  error: string | null;
   authorizationStatus: AuthStatus;
   userData: {
     name: string;
@@ -90,7 +76,28 @@ export type State = {
     isPro: boolean;
     token: string;
   } | null;
-  favoriteOffers: OfferData[] | null;
+  favoriteOffers: OfferData[];
+  error: string | null;
+  isLoading: {
+    offers: boolean;
+    reviews: boolean;
+    activeOffer: boolean;
+    nearbyOffers: boolean;
+    favorites: boolean;
+  };
+  isSending: {
+    review: boolean;
+    login: boolean;
+  };
+  isFailed: {
+    offers: boolean;
+    reviews: boolean;
+    review: boolean;
+    activeOffer: boolean;
+    nearbyOffers: boolean;
+    favorites: boolean;
+    login: boolean;
+  };
 };
 
 export type ReviewData = {
@@ -103,5 +110,15 @@ isPro: boolean;
 };
 comment: string;
 rating: number;
+}
+
+export type Dispatch = ThunkDispatch<State, void, AnyAction>;
+
+export type loginResData = {
+name: string;
+avatarUrl: string;
+isPro: boolean;
+email: string;
+token: string;
 }
 
