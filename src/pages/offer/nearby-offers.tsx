@@ -14,7 +14,7 @@ const NearbyOffers = ({offers, onActiveOfferChangeHandler}: NearbyOffersProps) =
         Other places in the neighbourhood
       </h2>
       <div className="near-places__list places__list">
-        <OffersList offers={offers} onActiveOfferChangeHandler={onActiveOfferChangeHandler} type="near-places"/>
+        <OffersList offers={offers} onActiveOfferChangeHandler={onActiveOfferChangeHandler} type="near-places" slice={3}/>
       </div>
     </section>
   </div>
