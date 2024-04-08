@@ -63,40 +63,46 @@ export type SelectedOfferData = {
 export type AuthStatus = typeof AUTH_STATUS_VALUES[number];
 
 export type State = {
-  city: CityData;
-  offers: OfferData[] | null;
-  reviews: ReviewData[];
-  activeOffer: SelectedOfferData;
-  nearbyOffers: OfferData[] | null;
-  authorizationStatus: AuthStatus;
-  userData: {
-    name: string;
-    email: string;
-    avatarUrl: string;
-    isPro: boolean;
-    token: string;
-  } | null;
-  favoriteOffers: OfferData[];
-  error: string | null;
-  isLoading: {
-    offers: boolean;
-    reviews: boolean;
-    activeOffer: boolean;
-    nearbyOffers: boolean;
-    favorites: boolean;
+  offers: {
+    city: CityData;
+    offers: OfferData[] | null;
   };
-  isSending: {
-    review: boolean;
-    login: boolean;
+  activeOffer: {
+    reviews: ReviewData[];
+    activeOffer: SelectedOfferData;
+    nearbyOffers: OfferData[] | null;
   };
-  isFailed: {
-    offers: boolean;
-    reviews: boolean;
-    review: boolean;
-    activeOffer: boolean;
-    nearbyOffers: boolean;
-    favorites: boolean;
-    login: boolean;
+  api: {
+    authorizationStatus: AuthStatus;
+    userData: {
+      name: string;
+      email: string;
+      avatarUrl: string;
+      isPro: boolean;
+      token: string;
+    } | null;
+    favoriteOffers: OfferData[];
+    error: string | null;
+    isLoading: {
+      offers: boolean;
+      reviews: boolean;
+      activeOffer: boolean;
+      nearbyOffers: boolean;
+      favorites: boolean;
+    };
+    isSending: {
+      review: boolean;
+      login: boolean;
+    };
+    isFailed: {
+      offers: boolean;
+      reviews: boolean;
+      review: boolean;
+      activeOffer: boolean;
+      nearbyOffers: boolean;
+      favorites: boolean;
+      login: boolean;
+    };
   };
 };
 

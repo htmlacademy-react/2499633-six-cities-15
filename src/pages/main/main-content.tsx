@@ -3,13 +3,13 @@ import { OfferData, CityData, Dispatch, State } from '../../types';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { SortOptions } from './sort-options/sort-options';
 import Map from '../../components/map/map';
-import { setCity } from '../../store/reducer';
 import { SORT_BY_VALUES, CITIES } from '../../const';
 import { Spinner } from './spinner';
 import { MainEmpty } from './main-empty';
 import { getOffersByCity, getSelectedCity } from '../../store/selector';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import { setCity } from '../../store/slice/offers-slice';
 
 
 export const MainContent = () => {
@@ -18,7 +18,7 @@ export const MainContent = () => {
   const cities: CityData[] = CITIES;
   const selectedCity: CityData = useSelector(getSelectedCity);
   const cityFromParams = cities.find((city) => city.name === params.city);
-  const offersIsLoading = useSelector((state: State) => state.isLoading.offers);
+  const offersIsLoading = useSelector((state: State) => state.api.isLoading.offers);
   const navigate = useNavigate();
 
   useEffect(() => {

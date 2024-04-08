@@ -26,12 +26,12 @@ export const Offer = () => {
   const selectedCity: CityData = targetOffer.city;
   const nearbyOffers = useSelector(getNearbyOffers);
   const [, setActiveOffer] = useState(nearbyOffers?.[0]);
-  const offersIsLoading = useSelector((state: State) => state.isLoading.activeOffer);
-  const reviewsIsLoading = useSelector((state: State) => state.isLoading.reviews);
-  const nearbyOffersIsLoading = useSelector((state: State) => state.isLoading.nearbyOffers);
-  const offerIsFailed = useSelector((state: State) => state.isFailed.activeOffer);
-  const reviewsIsFailed = useSelector((state: State) => state.isFailed.reviews);
-  const nearbyOffersIsFailed = useSelector((state: State) => state.isFailed.nearbyOffers);
+  const offersIsLoading = useSelector((state: State) => state.api.isLoading.activeOffer);
+  const reviewsIsLoading = useSelector((state: State) => state.api.isLoading.reviews);
+  const nearbyOffersIsLoading = useSelector((state: State) => state.api.isLoading.nearbyOffers);
+  const offerIsFailed = useSelector((state: State) => state.api.isFailed.activeOffer);
+  const reviewsIsFailed = useSelector((state: State) => state.api.isFailed.reviews);
+  const nearbyOffersIsFailed = useSelector((state: State) => state.api.isFailed.nearbyOffers);
   const onActiveOfferChangeHandler = useCallback((offer: OfferData | undefined) => {
     setActiveOffer(offer);
   }, []);

@@ -1,12 +1,13 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { activeOfferReducer, apiReducer, offersReducer } from './reducer';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { apiReducer } from './slice/api-slice';
 import { axiosInst } from '../api';
-import reduceReducers from 'reduce-reducers';
+import { activeOfferReducer } from './slice/active-offer-slice';
+import { offersReducer } from './slice/offers-slice';
 
 export const api = axiosInst;
 
 export const store = configureStore({
-  reducer: reduceReducers(offersReducer, activeOfferReducer, apiReducer),
+  reducer: combineReducers({offers: offersReducer, activeOffer: activeOfferReducer, api: apiReducer}),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       thunk: {

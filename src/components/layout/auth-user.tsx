@@ -4,12 +4,12 @@ import { getFavorites } from '../../store/selector';
 import { Dispatch, State } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/action';
-import { setAuthStatus } from '../../store/reducer';
+import { setAuthStatus } from '../../store/slice/api-slice';
 export const AuthUser = () => {
   const favoriteOffers = useSelector(getFavorites);
   const dispatch: Dispatch = useDispatch();
-  const userEmail = useSelector((state: State) => state.userData?.email);
-  const userAvatar = useSelector((state: State) => state.userData?.avatarUrl);
+  const userEmail = useSelector((state: State) => state.api.userData?.email);
+  const userAvatar = useSelector((state: State) => state.api.userData?.avatarUrl);
   const pathname: string = location.pathname;
   const isFavorites = new RegExp(Addresses.Favorites);
   const handleSignOut = () => {

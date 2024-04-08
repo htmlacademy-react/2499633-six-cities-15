@@ -20,8 +20,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const params = useParams();
   const paramPathname = Object.values(params)[0] as string;
   const pathname: string = location.pathname.replace(paramPathname, '');
-  const isEmptyMain = useSelector((state: State) => state.offers)?.length === 0 && pathname === '/';
-  const isEmptyFavorites = useSelector((state: State) => state.favoriteOffers)?.length === 0 && pathname === '/favorites';
+  const isEmptyMain = useSelector((state: State) => state.offers.offers)?.length === 0 && pathname === '/';
+  const isEmptyFavorites = useSelector((state: State) => state.api.favoriteOffers)?.length === 0 && pathname === '/favorites';
   const classNamesMap: { [key: string]: { wrapper: string; main: string } } = {
     '/': {
       wrapper: 'page page--gray page--main',

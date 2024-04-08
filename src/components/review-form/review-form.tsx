@@ -25,7 +25,7 @@ export const ReviewForm = ({id}: ReviewFormProps) => {
   };
 
 
-  const reviewIsFailed = useSelector((state: State) => state.isFailed.review);
+  const reviewIsFailed = useSelector((state: State) => state.api.isFailed.review);
   const dispatch: Dispatch = useDispatch();
   const handlePostReview = async(evt: FormEvent) => {
     try {

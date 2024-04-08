@@ -4,7 +4,7 @@ import './spinner.css';
 
 export const Spinner = () => {
 
-  const errorMessage = useSelector((state: State) => state.error);
+  const errorMessage = useSelector((state: State) => state.api.error);
 
   return (
     <div className='spinner'>

@@ -11,8 +11,8 @@ import { Spinner } from '../main/spinner';
 export const Favorites = () => {
   const dispatch: Dispatch = useDispatch();
   const favoriteOffers = useSelector(getFavorites);
-  const favoritesIsLoading = useSelector((state: State) => state.isLoading.favorites);
-  const favoritesIsFailed = useSelector((state: State) => state.isFailed.favorites);
+  const favoritesIsLoading = useSelector((state: State) => state.api.isLoading.favorites);
+  const favoritesIsFailed = useSelector((state: State) => state.api.isFailed.favorites);
   useEffect(() => {
     if (favoriteOffers === null) {
       dispatch(loadFavorites());

@@ -14,8 +14,8 @@ export const Login = () => {
   const dispatch: Dispatch = useDispatch();
   const authStatus: AuthStatus = useSelector(getAuthStatus);
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const loginIsSending = useSelector((state: State) => state.isSending.login);
-  const loginError = useSelector((state: State) => state.isFailed.login);
+  const loginIsSending = useSelector((state: State) => state.api.isSending.login);
+  const loginError = useSelector((state: State) => state.api.isFailed.login);
   const handleFieldChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = evt.target;
     setFormData({ ...formData, [name]: value });
